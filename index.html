@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AppSlides Studio — App Store & Play Store Screenshot Builder</title>
+<meta name="description" content="Create polished App Store and Play Store screenshot slides in your browser with device frames, editable copy, backgrounds, logos, callouts, PNG export, and ZIP export.">
+<meta name="application-name" content="AppSlides Studio">
+<meta name="apple-mobile-web-app-title" content="AppSlides Studio">
+<meta name="theme-color" content="#f7fbfa">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AppSlides Studio">
+<meta property="og:title" content="AppSlides Studio — App Store & Play Store Screenshot Builder">
+<meta property="og:description" content="Create polished mobile app store screenshot slides in your browser, then export PNGs or a ZIP.">
+<meta property="og:image" content="Screenshot.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AppSlides Studio — App Store & Play Store Screenshot Builder">
+<meta name="twitter:description" content="Create polished mobile app store screenshot slides in your browser, then export PNGs or a ZIP.">
+<meta name="twitter:image" content="Screenshot.png">
+<link rel="stylesheet" href="/src/styles.css">
+<link rel="stylesheet" href="/src/canvas.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "AppSlides Studio",
+  "applicationCategory": "DesignApplication",
+  "operatingSystem": "Web",
+  "description": "A browser-based tool for creating App Store and Play Store screenshot slides with device frames, backgrounds, logos, callouts, and image export.",
+  "image": "Screenshot.png"
+}
+</script>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><span class="brandmark"></span><span>AppSlides Studio</span></div>
+    <input id="projectName" class="project-name" type="text" value="My App Screenshots" aria-label="Project name">
+    <button class="btn" id="addSlide">＋ <span class="label">Add slide</span></button>
+    <button class="btn" id="duplicateSlide">⧉ <span class="label">Duplicate</span></button>
+    <button class="btn danger ghost" id="deleteSlide">⌫ <span class="label">Delete</span></button>
+    <div class="spacer"></div>
+    <button class="btn" id="newProject">New project</button>
+    <button class="btn" id="saveProject">Save project</button>
+    <button class="btn" id="loadProject">Load project</button>
+    <input id="projectFile" class="hidden" type="file" accept=".json,application/json">
+    <button class="btn primary" id="exportCurrent">Export PNG</button>
+    <button class="btn primary" id="exportAll">Export all ZIP</button>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <details class="panel" open>
+        <summary>Content</summary>
+        <div class="panel-body">
+          <div class="field">
+            <label>Eyebrow</label>
+            <input data-bind="eyebrow" type="text">
+          </div>
+          <div class="field">
+            <label>Headline</label>
+            <textarea data-bind="headline"></textarea>
+          </div>
+          <div class="field">
+            <label>Supporting text</label>
+            <textarea data-bind="subhead"></textarea>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Headline size <span class="value" data-value="headlineSize"></span></label>
+              <input data-bind="headlineSize" type="range" min="46" max="130" step="1">
+            </div>
+            <div class="field">
+              <label>Text width <span class="value" data-value="textWidth"></span></label>
+              <input data-bind="textWidth" type="range" min="45" max="90" step="1">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Text X <span class="value" data-value="textX"></span></label>
+              <input data-bind="textX" type="range" min="3" max="45" step=".5">
+            </div>
+            <div class="field">
+              <label>Text Y <span class="value" data-value="textY"></span></label>
+              <input data-bind="textY" type="range" min="3" max="30" step=".5">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Headline color</label>
+              <input data-bind="headlineColor" type="color">
+            </div>
+            <div class="field">
+              <label>Body color</label>
+              <input data-bind="subheadColor" type="color">
+            </div>
+          </div>
+          <div class="field">
+            <label>Text alignment</label>
+            <select data-bind="textAlign">
+              <option value="left">Left</option><option value="center">Center</option><option value="right">Right</option>
+            </select>
+          </div>
+        </div>
+      </details>
+
+      <details class="panel" open>
+        <summary>Screenshot & device</summary>
+        <div class="panel-body">
+          <div class="field">
+            <label>Phone model</label>
+            <select data-bind="device">
+              <option value="iphone">iPhone 15 Plus — 1284×2778</option>
+              <option value="s24">Galaxy S24 — 1080×2340</option>
+            </select>
+          </div>
+          <div class="row">
+            <div class="field"><button id="uploadScreenshot" class="btn wide">Upload screenshot</button></div>
+            <div class="field"><button id="pasteScreenshot" class="btn wide">Paste screenshot</button></div>
+          </div>
+          <input id="screenshotFile" class="hidden" type="file" accept="image/*">
+          <div class="help">You can also press <span class="kbd">Ctrl/⌘ V</span> or drag an image onto the canvas.</div>
+          <div class="row">
+            <div class="field">
+              <label>Phone scale <span class="value" data-value="phoneScale"></span></label>
+              <input data-bind="phoneScale" type="range" min="55" max="110" step=".5">
+            </div>
+            <div class="field">
+              <label>Phone rotation <span class="value" data-value="phoneRotation"></span></label>
+              <input data-bind="phoneRotation" type="range" min="-12" max="12" step=".25">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Phone X <span class="value" data-value="phoneX"></span></label>
+              <input data-bind="phoneX" type="range" min="15" max="85" step=".5">
+            </div>
+            <div class="field">
+              <label>Phone Y <span class="value" data-value="phoneY"></span></label>
+              <input data-bind="phoneY" type="range" min="20" max="100" step=".5">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Frame color</label>
+              <input data-bind="frameColor" type="color">
+            </div>
+            <div class="field">
+              <label>Screenshot fit</label>
+              <select data-bind="screenshotFit"><option value="cover">Cover</option><option value="contain">Contain</option></select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Shadow <span class="value" data-value="shadow"></span></label>
+            <input data-bind="shadow" type="range" min="0" max="100" step="1">
+          </div>
+        </div>
+      </details>
+
+      <details class="panel">
+        <summary>Background</summary>
+        <div class="panel-body">
+          <div class="row3">
+            <div class="field"><label>Color 1</label><input data-bind="bg1" type="color"></div>
+            <div class="field"><label>Color 2</label><input data-bind="bg2" type="color"></div>
+            <div class="field"><label>Color 3</label><input data-bind="bg3" type="color"></div>
+          </div>
+          <div class="field">
+            <label>Gradient angle <span class="value" data-value="bgAngle"></span></label>
+            <input data-bind="bgAngle" type="range" min="0" max="360" step="1">
+          </div>
+          <div class="row">
+            <label class="switch"><input data-bind="showDots" type="checkbox"> Dot texture</label>
+            <label class="switch"><input data-bind="showCurve" type="checkbox"> Accent curve</label>
+          </div>
+          <div class="field">
+            <label>Texture opacity <span class="value" data-value="textureOpacity"></span></label>
+            <input data-bind="textureOpacity" type="range" min="0" max="100" step="1">
+          </div>
+        </div>
+      </details>
+
+      <details class="panel">
+        <summary>Glow 1</summary>
+        <div class="panel-body">
+          <div class="row">
+            <div class="field"><label>Color</label><input data-bind="glow1.color" type="color"></div>
+            <div class="field">
+              <label>Opacity <span class="value" data-value="glow1.opacity"></span></label>
+              <input data-bind="glow1.opacity" type="range" min="0" max="100" step="1">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field"><label>X <span class="value" data-value="glow1.x"></span></label><input data-bind="glow1.x" type="range" min="-20" max="120" step="1"></div>
+            <div class="field"><label>Y <span class="value" data-value="glow1.y"></span></label><input data-bind="glow1.y" type="range" min="-20" max="120" step="1"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Size <span class="value" data-value="glow1.size"></span></label><input data-bind="glow1.size" type="range" min="5" max="90" step="1"></div>
+            <div class="field"><label>Softness <span class="value" data-value="glow1.softness"></span></label><input data-bind="glow1.softness" type="range" min="5" max="95" step="1"></div>
+          </div>
+        </div>
+      </details>
+
+      <details class="panel">
+        <summary>Glow 2</summary>
+        <div class="panel-body">
+          <div class="row">
+            <div class="field"><label>Color</label><input data-bind="glow2.color" type="color"></div>
+            <div class="field">
+              <label>Opacity <span class="value" data-value="glow2.opacity"></span></label>
+              <input data-bind="glow2.opacity" type="range" min="0" max="100" step="1">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field"><label>X <span class="value" data-value="glow2.x"></span></label><input data-bind="glow2.x" type="range" min="-20" max="120" step="1"></div>
+            <div class="field"><label>Y <span class="value" data-value="glow2.y"></span></label><input data-bind="glow2.y" type="range" min="-20" max="120" step="1"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Size <span class="value" data-value="glow2.size"></span></label><input data-bind="glow2.size" type="range" min="5" max="90" step="1"></div>
+            <div class="field"><label>Softness <span class="value" data-value="glow2.softness"></span></label><input data-bind="glow2.softness" type="range" min="5" max="95" step="1"></div>
+          </div>
+        </div>
+      </details>
+
+      <details class="panel">
+        <summary>Logo</summary>
+        <div class="panel-body">
+          <div class="row">
+            <div class="field"><button id="uploadLogo" class="btn wide">Upload logo</button></div>
+            <div class="field"><button id="removeLogo" class="btn wide danger ghost">Remove logo</button></div>
+          </div>
+          <input id="logoFile" class="hidden" type="file" accept="image/*">
+          <div class="row">
+            <div class="field"><label>Logo X <span class="value" data-value="logo.x"></span></label><input data-bind="logo.x" type="range" min="0" max="100" step=".5"></div>
+            <div class="field"><label>Logo Y <span class="value" data-value="logo.y"></span></label><input data-bind="logo.y" type="range" min="0" max="100" step=".5"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Scale <span class="value" data-value="logo.scale"></span></label><input data-bind="logo.scale" type="range" min="3" max="40" step=".5"></div>
+            <div class="field"><label>Opacity <span class="value" data-value="logo.opacity"></span></label><input data-bind="logo.opacity" type="range" min="0" max="100" step="1"></div>
+          </div>
+        </div>
+      </details>
+
+      <details class="panel">
+        <summary>Callout</summary>
+        <div class="panel-body">
+          <label class="switch field"><input data-bind="showCallout" type="checkbox"> Show callout</label>
+          <div class="field"><label>Title</label><input data-bind="calloutTitle" type="text"></div>
+          <div class="field"><label>Subtitle</label><input data-bind="calloutSub" type="text"></div>
+          <div class="row">
+            <div class="field"><label>X <span class="value" data-value="calloutX"></span></label><input data-bind="calloutX" type="range" min="5" max="95" step=".5"></div>
+            <div class="field"><label>Y <span class="value" data-value="calloutY"></span></label><input data-bind="calloutY" type="range" min="5" max="95" step=".5"></div>
+          </div>
+        </div>
+      </details>
+
+      <details class="panel">
+        <summary>Utilities</summary>
+        <div class="panel-body">
+          <div class="field"><button id="randomizeStyle" class="btn wide">Randomize aesthetic</button></div>
+          <div class="field"><button id="applyStyleAll" class="btn wide">Apply background, glows & phone frame to all slides</button></div>
+          <div class="field"><button id="resetSlide" class="btn wide">Reset current slide</button></div>
+          <label class="switch field"><input id="showGuides" type="checkbox"> Show safe-area guides in preview</label>
+          <div class="help">Guides never appear in exported PNG files.</div>
+        </div>
+      </details>
+    </aside>
+
+    <section class="workspace">
+      <div class="workspacebar">
+        <div class="slides" id="slides"></div>
+        <div class="spacer"></div>
+        <span class="pill" id="dimensions">1284 × 2778</span>
+        <span class="status" id="status">Ready</span>
+      </div>
+      <div class="stage-wrap" id="dropZone">
+        <div class="stage-shell" id="stageShell">
+          <canvas id="previewCanvas"></canvas>
+          <div class="drop-hint" id="dropHint">Drop screenshot to replace the current one</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
