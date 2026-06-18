@@ -109,10 +109,13 @@
         <summary>Screenshot & device</summary>
         <div class="panel-body">
           <div class="field">
-            <label>Phone model</label>
+            <label>Device frame</label>
             <select data-bind="device">
-              <option value="iphone">iPhone 15 Plus — 1284×2778</option>
-              <option value="s24">Galaxy S24 — 1080×2340</option>
+              <option value="iphone">Large iPhone portrait — 1284×2778, ~9:19.5</option>
+              <option value="ipad">iPad Pro portrait — 2048×2732, ~3:4</option>
+              <option value="ipadLandscape">iPad Pro landscape — 2732×2048, ~4:3</option>
+              <option value="ipadLandscapeSmall">iPad landscape app screenshot — 2160×1620, 4:3</option>
+              <option value="s24">Android phone portrait — 1080×2340, ~9:19.5</option>
             </select>
           </div>
           <div class="row">
@@ -123,21 +126,21 @@
           <div class="help">You can also press <span class="kbd">Ctrl/⌘ V</span> or drag an image onto the canvas.</div>
           <div class="row">
             <div class="field">
-              <label>Phone scale <span class="value" data-value="phoneScale"></span></label>
+              <label>Device scale <span class="value" data-value="phoneScale"></span></label>
               <input data-bind="phoneScale" type="range" min="55" max="110" step=".5">
             </div>
             <div class="field">
-              <label>Phone rotation <span class="value" data-value="phoneRotation"></span></label>
+              <label>Device rotation <span class="value" data-value="phoneRotation"></span></label>
               <input data-bind="phoneRotation" type="range" min="-12" max="12" step=".25">
             </div>
           </div>
           <div class="row">
             <div class="field">
-              <label>Phone X <span class="value" data-value="phoneX"></span></label>
+              <label>Device X <span class="value" data-value="phoneX"></span></label>
               <input data-bind="phoneX" type="range" min="15" max="85" step=".5">
             </div>
             <div class="field">
-              <label>Phone Y <span class="value" data-value="phoneY"></span></label>
+              <label>Device Y <span class="value" data-value="phoneY"></span></label>
               <input data-bind="phoneY" type="range" min="20" max="100" step=".5">
             </div>
           </div>
@@ -259,7 +262,7 @@
         <summary>Utilities</summary>
         <div class="panel-body">
           <div class="field"><button id="randomizeStyle" class="btn wide">Randomize aesthetic</button></div>
-          <div class="field"><button id="applyStyleAll" class="btn wide">Apply background, glows & phone frame to all slides</button></div>
+          <div class="field"><button id="applyStyleAll" class="btn wide">Apply background, glows & device frame to all slides</button></div>
           <div class="field"><button id="resetSlide" class="btn wide">Reset current slide</button></div>
           <label class="switch field"><input id="showGuides" type="checkbox"> Show safe-area guides in preview</label>
           <div class="help">Guides never appear in exported PNG files.</div>

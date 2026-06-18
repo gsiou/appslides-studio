@@ -3,7 +3,10 @@
 
   const DEVICE = {
     iphone: { name:"iPhone 15 Plus", w:1284, h:2778, ratio:2778/1284, shellRadius:.078, screenPad:.027, screenRadius:.060 },
-    s24:    { name:"Galaxy S24",      w:1080, h:2340, ratio:2340/1080, shellRadius:.064, screenPad:.023, screenRadius:.051 }
+    ipad:   { name:"iPad Pro", w:2048, h:2732, ratio:2732/2048, shellRadius:.040, screenPad:.033, screenRadius:.026 },
+    ipadLandscape:{ name:"iPad Pro Landscape", w:2732, h:2048, ratio:2048/2732, shellRadius:.040, screenPad:.033, screenRadius:.026 },
+    ipadLandscapeSmall:{ name:"iPad Landscape Small", w:2732, h:2048, ratio:(1620/2160)*(1-.066)+.066, screenRatio:1620/2160, frameScale:.82, imageFit:"contain", shellRadius:.040, screenPad:.033, screenRadius:.026 },
+    s24:    { name:"Galaxy S24", w:1080, h:2340, ratio:2340/1080, shellRadius:.064, screenPad:.023, screenRadius:.051 }
   };
 
   const defaultSlide = () => ({
@@ -58,6 +61,7 @@
     const base=defaultSlide();
     const normalizedPhoneY=Number(slide.phoneY)===64 ? base.phoneY : slide.phoneY;
     return Object.assign(base,slide,{
+      device:DEVICE[slide.device] ? slide.device : base.device,
       phoneY:normalizedPhoneY,
       glow1:Object.assign(base.glow1,slide.glow1||{}),
       glow2:Object.assign(base.glow2,slide.glow2||{}),
@@ -332,7 +336,7 @@
 
   function drawPhone(ctx,s,w,h){
     const d=DEVICE[s.device];
-    const baseW=w*.70*(s.phoneScale/78);
+    const baseW=w*.70*(s.phoneScale/78)*(d.frameScale||1);
     const baseH=baseW*d.ratio;
     const cx=w*s.phoneX/100,cy=h*s.phoneY/100;
     const x=-baseW/2,y=-baseH/2;
@@ -367,7 +371,7 @@
     roundedRect(ctx,sx,sy,sw,sh,screenR);ctx.clip();
     ctx.fillStyle="#0b1020";ctx.fillRect(sx,sy,sw,sh);
     const rec=getImage(s.screenshotData);
-    if(rec?.ready) drawImageFit(ctx,rec.img,sx,sy,sw,sh,s.screenshotFit);
+    if(rec?.ready) drawImageFit(ctx,rec.img,sx,sy,sw,sh,d.imageFit||s.screenshotFit);
     else drawPlaceholderUI(ctx,sx,sy,sw,sh,s);
     ctx.restore();
 
@@ -375,25 +379,17 @@
       const islandW=baseW*.26,islandH=baseW*.073;
       ctx.fillStyle="#030303";roundedRect(ctx,-islandW/2,sy+baseW*.026,islandW,islandH,islandH/2);ctx.fill();
       ctx.fillStyle="#172033";ctx.beginPath();ctx.arc(islandW*.26,sy+baseW*.062,baseW*.009,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#4b5563";
-      roundedRect(ctx,x-baseW*.010,y+baseW*.37,baseW*.014,baseW*.15,baseW*.007);ctx.fill();
-      roundedRect(ctx,x-baseW*.010,y+baseW*.57,baseW*.014,baseW*.25,baseW*.007);ctx.fill();
-      roundedRect(ctx,x+baseW-baseW*.004,y+baseW*.47,baseW*.014,baseW*.31,baseW*.007);ctx.fill();
+    }else if(s.device==="ipad" || s.device==="ipadLandscape"){
+      ctx.fillStyle="#030303";ctx.beginPath();ctx.arc(0,sy+baseW*.030,baseW*.010,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#172033";ctx.beginPath();ctx.arc(0,sy+baseW*.030,baseW*.004,0,Math.PI*2);ctx.fill();
     }else{
       ctx.fillStyle="#030303";ctx.beginPath();ctx.arc(0,sy+baseW*.034,baseW*.016,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#172033";ctx.beginPath();ctx.arc(0,sy+baseW*.034,baseW*.006,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#4b5563";
-      roundedRect(ctx,x+baseW-baseW*.003,y+baseW*.36,baseW*.011,baseW*.23,baseW*.005);ctx.fill();
-      roundedRect(ctx,x+baseW-baseW*.003,y+baseW*.62,baseW*.011,baseW*.12,baseW*.005);ctx.fill();
     }
 
     ctx.strokeStyle="rgba(255,255,255,.13)";
     ctx.lineWidth=Math.max(1,baseW*.003);
     roundedRect(ctx,sx,sy,sw,sh,screenR);ctx.stroke();
-
-    ctx.strokeStyle="rgba(255,255,255,.15)";
-    ctx.lineWidth=baseW*.008;ctx.lineCap="round";
-    ctx.beginPath();ctx.moveTo(sx+baseW*.05,sy+baseW*.04);ctx.bezierCurveTo(sx+baseW*.22,sy+baseW*.02,sx+baseW*.46,sy+baseW*.04,sx+baseW*.66,sy+baseW*.01);ctx.stroke();
 
     ctx.restore();
   }
@@ -654,7 +650,7 @@
   }
 
   $$("[data-bind]").forEach(el=>{
-    const event=(el.type==="text"||el.tagName==="TEXTAREA")?"input":"input";
+    const event=el.tagName==="SELECT" ? "change" : "input";
     el.addEventListener(event,()=>{
       let value=el.type==="checkbox"?el.checked:isNumericInput(el)?Number(el.value):el.value;
       setPath(current(),el.dataset.bind,value);
