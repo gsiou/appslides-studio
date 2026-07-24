@@ -50,6 +50,39 @@
   const STORAGE_KEY = "appslides-studio-project";
   const LEGACY_STORAGE_KEY = "storeshot-studio-project";
 
+  const DB_NAME = "appslides-studio";
+  const DB_STORE = "projects";
+  const DB_KEY = "current";
+
+  let dbPromise = null;
+  function openDB(){
+    if(dbPromise) return dbPromise;
+    dbPromise = new Promise((resolve,reject)=>{
+      const req = indexedDB.open(DB_NAME,1);
+      req.onupgradeneeded = () => req.result.createObjectStore(DB_STORE);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    return dbPromise;
+  }
+  async function idbGet(key){
+    const db = await openDB();
+    return new Promise((resolve,reject)=>{
+      const req = db.transaction(DB_STORE,"readonly").objectStore(DB_STORE).get(key);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function idbSet(key,value){
+    const db = await openDB();
+    return new Promise((resolve,reject)=>{
+      const tx = db.transaction(DB_STORE,"readwrite");
+      tx.objectStore(DB_STORE).put(value,key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
   const defaultProject = () => ({
     version:1,
     name:"My App Screenshots",
@@ -82,23 +115,32 @@
     };
   }
 
-  function loadSavedProject(){
+  async function loadSavedProject(){
     try{
-      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
-      return normalizeProject(JSON.parse(saved));
+      let stored = await idbGet(DB_KEY);
+      if(stored == null){
+        // One-time migration from the legacy localStorage store.
+        const legacy = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+        if(legacy){
+          stored = JSON.parse(legacy);
+          idbSet(DB_KEY,stored).catch(()=>{});
+          try{ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(LEGACY_STORAGE_KEY); }catch{}
+        }
+      }
+      return normalizeProject(stored ?? null);
     }catch{
-      try{ localStorage.removeItem(STORAGE_KEY); }catch{}
       return defaultProject();
     }
   }
 
+  let persistTimer = null;
   function persistProject(){
-    try{
-      localStorage.setItem(STORAGE_KEY,JSON.stringify(project));
-      setStatus("Saved locally");
-    }catch{
-      setStatus("Local storage is full");
-    }
+    clearTimeout(persistTimer);
+    persistTimer = setTimeout(()=>{
+      idbSet(DB_KEY,project)
+        .then(()=>setStatus("Saved locally"))
+        .catch(()=>setStatus("Could not save locally"));
+    },150);
   }
 
   function commitProjectChange(){
@@ -106,7 +148,7 @@
     queueRender();
   }
 
-  let project = loadSavedProject();
+  let project = defaultProject();
 
   const $ = sel => document.querySelector(sel);
   const $$ = sel => [...document.querySelectorAll(sel)];
@@ -709,4 +751,10 @@
 
   syncControls();
   setTimeout(()=>{resizePreview();queueRender()},50);
+
+  loadSavedProject().then(saved=>{
+    project = saved;
+    syncControls();
+    setTimeout(()=>{resizePreview();queueRender()},50);
+  });
 })();
