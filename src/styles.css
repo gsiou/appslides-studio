@@ -82,7 +82,7 @@
 
   .layout {
     display: grid;
-    grid-template-columns: 380px 1fr;
+    grid-template-columns: 380px minmax(0, 1fr);
     min-height: 0
   }
 
@@ -273,6 +273,7 @@
   }
 
   .slide-chip {
+    flex: 0 0 auto;
     border: 1px solid var(--line);
     background: #ffffff;
     color: var(--muted);
@@ -353,7 +354,7 @@
 
   @media(max-width:980px) {
     .layout {
-      grid-template-columns: 320px 1fr
+      grid-template-columns: 320px minmax(0, 1fr)
     }
 
     .project-name {
@@ -373,7 +374,7 @@
     }
 
     .layout {
-      grid-template-columns: 1fr
+      grid-template-columns: minmax(0, 1fr)
     }
 
     .sidebar {

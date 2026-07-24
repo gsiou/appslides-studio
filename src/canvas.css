@@ -2,6 +2,7 @@
     min-width: 0;
     min-height: 0;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto 1fr;
     background:
       linear-gradient(135deg, rgba(42, 166, 163, .08) 0 18%, transparent 18% 100%),
