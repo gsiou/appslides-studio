@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-AppSlides Studio is a client-only screenshot builder for App Store and Play Store images. It renders all artwork into an HTML canvas, stores project state in `localStorage`, imports screenshots/logos through browser file APIs, exports PNG files from canvas blobs, and exports multiple slides using the built-in uncompressed ZIP writer.
+AppSlides Studio is a client-only screenshot builder for App Store and Play Store images. It renders all artwork into an HTML canvas, stores project state in `IndexedDB` (with a one-time migration from the legacy `localStorage` store), imports screenshots/logos through browser file APIs, exports PNG files from canvas blobs, and exports multiple slides using the built-in uncompressed ZIP writer.
 
 ## Structure
 
