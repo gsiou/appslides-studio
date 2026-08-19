@@ -2,11 +2,11 @@
   "use strict";
 
   const DEVICE = {
-    iphone: { name:"iPhone 15 Plus", w:1284, h:2778, ratio:2778/1284, shellRadius:.078, screenPad:.027, screenRadius:.060 },
-    ipad:   { name:"iPad Pro", w:2048, h:2732, ratio:2732/2048, shellRadius:.040, screenPad:.033, screenRadius:.026 },
-    ipadLandscape:{ name:"iPad Pro Landscape", w:2732, h:2048, ratio:2048/2732, shellRadius:.040, screenPad:.033, screenRadius:.026 },
-    ipadLandscapeSmall:{ name:"iPad Landscape Small", w:2732, h:2048, ratio:(1620/2160)*(1-.066)+.066, screenRatio:1620/2160, frameScale:.82, imageFit:"contain", shellRadius:.040, screenPad:.033, screenRadius:.026 },
-    s24:    { name:"Galaxy S24", w:1080, h:2340, ratio:2340/1080, shellRadius:.064, screenPad:.023, screenRadius:.051 }
+    iphone: { name:"iPhone 15 Plus", w:1284, h:2778, contentW:1284, contentH:2703, ratio:2778/1284, shellRadius:.078, screenPad:.027, screenRadius:.060 },
+    ipad:   { name:"iPad Pro", w:2048, h:2732, contentW:2048, contentH:2704, ratio:2732/2048, shellRadius:.040, screenPad:.033, screenRadius:.026 },
+    ipadLandscape:{ name:"iPad Pro Landscape", w:2732, h:2048, contentW:2732, contentH:1906, ratio:2048/2732, shellRadius:.040, screenPad:.033, screenRadius:.026 },
+    ipadLandscapeSmall:{ name:"iPad Landscape Small", w:2732, h:2048, contentW:2160, contentH:1546, ratio:(1620/2160)*(1-.066)+.066, screenRatio:1620/2160, frameScale:.82, imageFit:"contain", shellRadius:.040, screenPad:.033, screenRadius:.026 },
+    s24:    { name:"Galaxy S24", w:1080, h:2340, contentW:1080, contentH:2317, ratio:2340/1080, shellRadius:.064, screenPad:.023, screenRadius:.051 }
   };
 
   const defaultSlide = () => ({
@@ -23,6 +23,7 @@
     textAlign:"left",
     screenshotData:"",
     screenshotFit:"cover",
+    showTopBar:true,
     phoneScale:78,
     phoneRotation:0,
     phoneX:50,
@@ -200,6 +201,7 @@
     });
     $("#projectName").value=project.name;
     $("#dimensions").textContent=`${DEVICE[s.device].w} × ${DEVICE[s.device].h}`;
+    updateScreenshotDimensionsNote();
     renderSlides();
     resizePreview();
     queueRender();
@@ -229,6 +231,12 @@
     stageShell.style.height=cssH+"px";
     preview.width=d.w;
     preview.height=d.h;
+  }
+
+  function updateScreenshotDimensionsNote(){
+    const d=DEVICE[current().device];
+    $("#screenshotDimensionsNote").textContent=
+      `Upload app content only: recommended ${d.contentW} × ${d.contentH} px. The device status bar is added automatically.`;
   }
 
   function queueRender(){
@@ -376,6 +384,66 @@
     ctx.fillText("your app screenshot",x+w/2,y+h*.915);
   }
 
+  function deviceTopBarHeight(s,baseW){
+    if(!s.showTopBar)return 0;
+    if(s.device==="iphone")return baseW*.118;
+    if(s.device==="s24")return baseW*.074;
+    if(s.device==="ipad")return baseW*.035;
+    return baseW*.032;
+  }
+
+  function drawDeviceTopBar(ctx,s,x,y,w,baseW,barH){
+    if(!barH)return;
+    const isIPhone=s.device==="iphone";
+    const isAndroid=s.device==="s24";
+    const inset=baseW*(isIPhone ? .060 : isAndroid ? .042 : .032);
+    const iconY=y+barH*.52;
+    const ink="#111827";
+
+    ctx.save();
+    ctx.fillStyle="#ffffff";
+    ctx.fillRect(x,y,w,barH);
+    ctx.fillStyle=ink;
+    ctx.strokeStyle=ink;
+    ctx.lineCap="round";
+    ctx.lineJoin="round";
+    ctx.font=`600 ${Math.max(10,isIPhone ? baseW*.032 : isAndroid ? baseW*.026 : barH*.44)}px Inter, Arial, sans-serif`;
+    ctx.textBaseline="middle";
+    ctx.textAlign="left";
+    ctx.fillText(isAndroid ? "10:00" : "9:41",x+inset,iconY);
+
+    const batteryW=baseW*(isIPhone ? .056 : isAndroid ? .044 : .028);
+    const batteryH=baseW*(isIPhone ? .027 : isAndroid ? .021 : .013);
+    const batteryX=x+w-inset-batteryW;
+    const batteryY=iconY-batteryH/2;
+    ctx.globalAlpha=.38;
+    ctx.lineWidth=Math.max(1,baseW*.0025);
+    roundedRect(ctx,batteryX,batteryY,batteryW,batteryH,batteryH*.28);ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.fillStyle=ink;
+    roundedRect(ctx,batteryX+batteryW*.09,batteryY+batteryH*.15,batteryW*.72,batteryH*.70,batteryH*.16);ctx.fill();
+    ctx.fillRect(batteryX+batteryW+baseW*.002,batteryY+batteryH*.32,baseW*.004,batteryH*.36);
+
+    const wifiX=batteryX-baseW*(isIPhone ? .047 : isAndroid ? .040 : .034);
+    const wifiY=iconY+baseW*(isIPhone || isAndroid ? .012 : .007);
+    ctx.lineWidth=Math.max(1,baseW*(isAndroid ? .0035 : .004));
+    for(let i=0;i<3;i++){
+      ctx.beginPath();
+      ctx.arc(wifiX,wifiY,baseW*((isIPhone || isAndroid ? .008 : .005)+i*(isIPhone || isAndroid ? .009 : .005)),Math.PI*1.20,Math.PI*1.80);
+      ctx.stroke();
+    }
+    ctx.beginPath();ctx.arc(wifiX,wifiY,baseW*(isIPhone || isAndroid ? .0038 : .0028),0,Math.PI*2);ctx.fill();
+
+    if(isIPhone || isAndroid){
+      const signalX=wifiX-baseW*(isIPhone ? .064 : .060);
+      for(let i=0;i<4;i++){
+        const bh=baseW*(.009+i*.006);
+        roundedRect(ctx,signalX+i*baseW*.009,iconY+baseW*.014-bh,baseW*.0055,bh,baseW*.0025);ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
   function drawPhone(ctx,s,w,h){
     const d=DEVICE[s.device];
     const baseW=w*.70*(s.phoneScale/78)*(d.frameScale||1);
@@ -412,21 +480,26 @@
     ctx.save();
     roundedRect(ctx,sx,sy,sw,sh,screenR);ctx.clip();
     ctx.fillStyle="#0b1020";ctx.fillRect(sx,sy,sw,sh);
+    const topBarH=deviceTopBarHeight(s,baseW);
+    const contentY=sy+topBarH;
+    const contentH=sh-topBarH;
     const rec=getImage(s.screenshotData);
-    if(rec?.ready) drawImageFit(ctx,rec.img,sx,sy,sw,sh,d.imageFit||s.screenshotFit);
-    else drawPlaceholderUI(ctx,sx,sy,sw,sh,s);
+    if(rec?.ready) drawImageFit(ctx,rec.img,sx,contentY,sw,contentH,d.imageFit||s.screenshotFit);
+    else drawPlaceholderUI(ctx,sx,contentY,sw,contentH,s);
+    drawDeviceTopBar(ctx,s,sx,sy,sw,baseW,topBarH);
     ctx.restore();
 
     if(s.device==="iphone"){
       const islandW=baseW*.26,islandH=baseW*.073;
       ctx.fillStyle="#030303";roundedRect(ctx,-islandW/2,sy+baseW*.026,islandW,islandH,islandH/2);ctx.fill();
       ctx.fillStyle="#172033";ctx.beginPath();ctx.arc(islandW*.26,sy+baseW*.062,baseW*.009,0,Math.PI*2);ctx.fill();
-    }else if(s.device==="ipad" || s.device==="ipadLandscape"){
-      ctx.fillStyle="#030303";ctx.beginPath();ctx.arc(0,sy+baseW*.030,baseW*.010,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#172033";ctx.beginPath();ctx.arc(0,sy+baseW*.030,baseW*.004,0,Math.PI*2);ctx.fill();
+    }else if(s.device==="ipad" || s.device==="ipadLandscape" || s.device==="ipadLandscapeSmall"){
+      const cameraY=y+pad*.48;
+      ctx.fillStyle="#030303";ctx.beginPath();ctx.arc(0,cameraY,baseW*.006,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#172033";ctx.beginPath();ctx.arc(0,cameraY,baseW*.0025,0,Math.PI*2);ctx.fill();
     }else{
-      ctx.fillStyle="#030303";ctx.beginPath();ctx.arc(0,sy+baseW*.034,baseW*.016,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#172033";ctx.beginPath();ctx.arc(0,sy+baseW*.034,baseW*.006,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#030303";ctx.beginPath();ctx.arc(0,sy+baseW*.037,baseW*.008,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#172033";ctx.beginPath();ctx.arc(0,sy+baseW*.037,baseW*.003,0,Math.PI*2);ctx.fill();
     }
 
     ctx.strokeStyle="rgba(255,255,255,.13)";
@@ -679,6 +752,7 @@
       showCurve:source.showCurve,
       textureOpacity:source.textureOpacity,
       frameColor:source.frameColor,
+      showTopBar:source.showTopBar,
       glow1:deepClone(source.glow1),
       glow2:deepClone(source.glow2)
     };
@@ -696,7 +770,7 @@
     el.addEventListener(event,()=>{
       let value=el.type==="checkbox"?el.checked:isNumericInput(el)?Number(el.value):el.value;
       setPath(current(),el.dataset.bind,value);
-      if(el.dataset.bind==="device") resizePreview();
+      if(el.dataset.bind==="device"){resizePreview();updateScreenshotDimensionsNote()}
       $$(`[data-value="${el.dataset.bind}"]`).forEach(v=>{
         const path=el.dataset.bind;
         const suffix = path.includes("opacity") || ["textWidth","textX","textY","phoneScale","phoneX","phoneY","shadow","textureOpacity","calloutX","calloutY"].includes(path) || path.startsWith("logo.") || path.endsWith(".x") || path.endsWith(".y") || path.endsWith(".size") || path.endsWith(".softness") ? "%" : path==="phoneRotation" || path==="bgAngle" ? "°" : "px";
