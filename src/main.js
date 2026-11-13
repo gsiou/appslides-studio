@@ -2,7 +2,7 @@
   "use strict";
 
   const DEVICE = {
-    iphone: { name:"iPhone 15 Plus", w:1284, h:2778, screenW:1284, topBar:.118, ratio:2778/1284, shellRadius:.078, screenPad:.027, screenRadius:.060 },
+    iphone: { name:"iPhone 6.3-inch", w:1206, h:2622, screenW:1206, topBar:.118, ratio:2622/1206, shellRadius:.078, screenPad:.027, screenRadius:.060 },
     ipad:   { name:"iPad Pro", w:2048, h:2732, screenW:2048, topBar:.035, ratio:2732/2048, shellRadius:.040, screenPad:.033, screenRadius:.026 },
     ipadLandscape:{ name:"iPad Pro Landscape", w:2732, h:2048, screenW:2732, topBar:.032, ratio:2048/2732, shellRadius:.040, screenPad:.033, screenRadius:.026 },
     ipadLandscapeSmall:{ name:"iPad Landscape Small", w:2732, h:2048, screenW:2160, topBar:.032, ratio:(1620/2160)*(1-.066)+.066, screenRatio:1620/2160, frameScale:.82, imageFit:"contain", shellRadius:.040, screenPad:.033, screenRadius:.026 },
