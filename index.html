@@ -124,6 +124,9 @@
           </div>
           <input id="screenshotFile" class="hidden" type="file" accept="image/*">
           <div class="help">You can also press <span class="kbd">Ctrl/⌘ V</span> or drag an image onto the canvas.</div>
+          <div class="field">
+            <label class="switch"><input data-bind="showTopBar" type="checkbox"> Draw device status bar</label>
+          </div>
           <div class="help" id="screenshotDimensionsNote"></div>
           <div class="row">
             <div class="field">
@@ -154,9 +157,6 @@
               <label>Screenshot fit</label>
               <select data-bind="screenshotFit"><option value="cover">Cover</option><option value="contain">Contain</option></select>
             </div>
-          </div>
-          <div class="field">
-            <label class="switch"><input data-bind="showTopBar" type="checkbox"> Device-aware top bar</label>
           </div>
           <div class="field">
             <label>Shadow <span class="value" data-value="shadow"></span></label>

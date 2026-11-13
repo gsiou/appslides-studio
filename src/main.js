@@ -2,11 +2,11 @@
   "use strict";
 
   const DEVICE = {
-    iphone: { name:"iPhone 15 Plus", w:1284, h:2778, contentW:1284, contentH:2703, ratio:2778/1284, shellRadius:.078, screenPad:.027, screenRadius:.060 },
-    ipad:   { name:"iPad Pro", w:2048, h:2732, contentW:2048, contentH:2704, ratio:2732/2048, shellRadius:.040, screenPad:.033, screenRadius:.026 },
-    ipadLandscape:{ name:"iPad Pro Landscape", w:2732, h:2048, contentW:2732, contentH:1906, ratio:2048/2732, shellRadius:.040, screenPad:.033, screenRadius:.026 },
-    ipadLandscapeSmall:{ name:"iPad Landscape Small", w:2732, h:2048, contentW:2160, contentH:1546, ratio:(1620/2160)*(1-.066)+.066, screenRatio:1620/2160, frameScale:.82, imageFit:"contain", shellRadius:.040, screenPad:.033, screenRadius:.026 },
-    s24:    { name:"Galaxy S24", w:1080, h:2340, contentW:1080, contentH:2317, ratio:2340/1080, shellRadius:.064, screenPad:.023, screenRadius:.051 }
+    iphone: { name:"iPhone 15 Plus", w:1284, h:2778, screenW:1284, topBar:.118, ratio:2778/1284, shellRadius:.078, screenPad:.027, screenRadius:.060 },
+    ipad:   { name:"iPad Pro", w:2048, h:2732, screenW:2048, topBar:.035, ratio:2732/2048, shellRadius:.040, screenPad:.033, screenRadius:.026 },
+    ipadLandscape:{ name:"iPad Pro Landscape", w:2732, h:2048, screenW:2732, topBar:.032, ratio:2048/2732, shellRadius:.040, screenPad:.033, screenRadius:.026 },
+    ipadLandscapeSmall:{ name:"iPad Landscape Small", w:2732, h:2048, screenW:2160, topBar:.032, ratio:(1620/2160)*(1-.066)+.066, screenRatio:1620/2160, frameScale:.82, imageFit:"contain", shellRadius:.040, screenPad:.033, screenRadius:.026 },
+    s24:    { name:"Galaxy S24", w:1080, h:2340, screenW:1080, topBar:.074, ratio:2340/1080, shellRadius:.064, screenPad:.023, screenRadius:.051 }
   };
 
   const defaultSlide = () => ({
@@ -233,10 +233,23 @@
     preview.height=d.h;
   }
 
+  // Pixel budget for the uploaded screenshot, in the device's own screen pixels.
+  // The frame draws the top bar as a fraction of the shell width, so the same
+  // proportions are reused here to keep the advertised numbers honest.
+  function screenshotTarget(deviceKey,showTopBar){
+    const d=DEVICE[deviceKey];
+    const scale=d.screenW/(1-2*d.screenPad);
+    const fullH=Math.round((d.ratio-2*d.screenPad)*scale);
+    const barH=showTopBar ? Math.round(d.topBar*scale) : 0;
+    return { w:d.screenW, fullH, barH, contentH:fullH-barH };
+  }
+
   function updateScreenshotDimensionsNote(){
-    const d=DEVICE[current().device];
-    $("#screenshotDimensionsNote").textContent=
-      `Upload app content only: recommended ${d.contentW} × ${d.contentH} px. The device status bar is added automatically.`;
+    const s=current();
+    const t=screenshotTarget(s.device,s.showTopBar);
+    $("#screenshotDimensionsNote").textContent = t.barH
+      ? `Upload app content only — ${t.w} × ${t.contentH} px. The top bar is drawn for you and takes ${t.barH} px of the ${t.w} × ${t.fullH} px screen.`
+      : `Upload the full screen — ${t.w} × ${t.fullH} px, including the status bar already in your screenshot.`;
   }
 
   function queueRender(){
@@ -386,10 +399,7 @@
 
   function deviceTopBarHeight(s,baseW){
     if(!s.showTopBar)return 0;
-    if(s.device==="iphone")return baseW*.118;
-    if(s.device==="s24")return baseW*.074;
-    if(s.device==="ipad")return baseW*.035;
-    return baseW*.032;
+    return baseW*DEVICE[s.device].topBar;
   }
 
   function drawDeviceTopBar(ctx,s,x,y,w,baseW,barH){
@@ -770,7 +780,8 @@
     el.addEventListener(event,()=>{
       let value=el.type==="checkbox"?el.checked:isNumericInput(el)?Number(el.value):el.value;
       setPath(current(),el.dataset.bind,value);
-      if(el.dataset.bind==="device"){resizePreview();updateScreenshotDimensionsNote()}
+      if(el.dataset.bind==="device") resizePreview();
+      if(el.dataset.bind==="device" || el.dataset.bind==="showTopBar") updateScreenshotDimensionsNote();
       $$(`[data-value="${el.dataset.bind}"]`).forEach(v=>{
         const path=el.dataset.bind;
         const suffix = path.includes("opacity") || ["textWidth","textX","textY","phoneScale","phoneX","phoneY","shadow","textureOpacity","calloutX","calloutY"].includes(path) || path.startsWith("logo.") || path.endsWith(".x") || path.endsWith(".y") || path.endsWith(".size") || path.endsWith(".softness") ? "%" : path==="phoneRotation" || path==="bgAngle" ? "°" : "px";
